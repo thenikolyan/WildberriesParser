@@ -12,3 +12,4 @@ if __name__ == '__main__':
     product = products.multiprocess(5)
     df = products.multiprocess(product, mode='other_sellers')
     df.to_excel('test.xlsx', index=False)
+git remote add origin https://github.com/thenikolyan/WildberriesParser.git
