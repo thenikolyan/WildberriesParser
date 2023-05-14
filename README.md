@@ -6,7 +6,7 @@ The parser was created to quickly obtain information using requests from the sit
 
 ## Products
 
-If uoy need common information from brand or catalog. You have to create object of Product class, so the class needs to pass a link as an argument
+If uoy need common information from brand or catalog. You have to create object of Product class, so the class needs to pass a link as an argument.
 
 ```python
 import pandas as pd
@@ -57,3 +57,15 @@ If you want to know how many times a product has been bought, you need to use th
     purchased_products.to_excel('filename.xlsx', index=False)
 ```
 As a result, you will have a file with columns `nmId` and `qnt` article and number, respectively.
+
+
+## Catalog
+If you need information about all catalogs. You have to create object of Catalog class, without argument.
+
+```python
+    catalog = Catalog()
+    catalog_data = catalog.ge_catalog()
+    catalog_data.to_excel('filename.xlsx', index=False)
+```
+
+As a result, you get excel file like this:

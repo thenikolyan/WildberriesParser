@@ -5,8 +5,11 @@ import json
 
 
 class Catalog:
-    def __init__(self, url: str) -> None:
-        self.url = url
+    def __init__(self, url: str=None) -> None:
+        if url is None:
+            self.url = 'https://static-basket-01.wb.ru/vol0/data/main-menu-ru-ru-v2.json'
+        else:
+            self.url = url
 
 
     def get_json_catalog(self, url: str=None) -> list:
@@ -17,7 +20,7 @@ class Catalog:
         return (json.loads(response.text))
 
 
-    def get_table_catalog(self, data: list=None, url: str=None, result: pd.DataFrame=pd.DataFrame([])) -> pd.DataFrame:
+    def ge_catalog(self, data: list=None, url: str=None, result: pd.DataFrame=pd.DataFrame([])) -> pd.DataFrame:
         
         if url is None:
             url = self.url
@@ -27,7 +30,7 @@ class Catalog:
 
         for x in data:
             if x.get('childs') is not None:
-                result = self.get_table_catalog(x.get('childs'), url, result)
+                result = self.ge_catalog(x.get('childs'), url, result)
             else:
                 result = pd.concat([result, pd.DataFrame([x])])
         return result
