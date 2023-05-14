@@ -71,3 +71,27 @@ If you need information about all catalogs. You have to create object of Catalog
 As a result, you get excel file like this:
 ![third](https://github.com/thenikolyan/WildberriesParser/assets/48589418/b9df370f-ac54-4bef-94da-20d1e37b341d)
 
+
+## Programm
+```python
+import pandas as pd
+
+from utils.products import Product
+from utils.catalog import Catalog
+
+if __name__ == '__main__':
+    url = 'https://www.wildberries.ru/catalog/igrushki/antistress'
+    products = Product(url)
+    df = products.multiprocess(5)
+    df.to_excel('df.xlsx', index=False)
+
+    other_products = products.multiprocess(df, mode='other_sellers')
+    other_products.to_excel('other_products.xlsx', index=False)
+
+    purchased_products = products.multiprocess(df, mode='purchased_products')
+    purchased_products.to_excel('purchased_products.xlsx', index=False)
+
+    catalog = Catalog()
+    catalog_data = catalog.ge_catalog()
+    catalog_data.to_excel('catalog_data.xlsx', index=False)
+```
