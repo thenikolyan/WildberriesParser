@@ -9,7 +9,8 @@ if __name__ == '__main__':
     #url = 'https://www.wildberries.ru/brands/prosveshchenie'
 
     products = Product(url)
-    product = products.multiprocess(5)
-    product.to_excel('product.xlsx', index=False)
-    # df = products.multiprocess(product, mode='other_sellers')
-    # df.to_excel('test.xlsx', index=False)
+    product = products.multiprocess(1)
+    # product.to_excel('product.xlsx', index=False)
+    df = products.multiprocess(product, mode='purchased_products')
+    df.to_excel('test.xlsx', index=False)
+    

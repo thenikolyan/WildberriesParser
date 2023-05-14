@@ -4,6 +4,8 @@ The parser was created to quickly obtain information using requests from the sit
 
 # Instructions for use
 
+## Products
+
 If uoy need common information from brand or catalog. You have to create object of Product class, so the class needs to pass a link as an argument
 
 ```python
@@ -30,3 +32,28 @@ As a result, you get excel file like this:
 ![second](https://github.com/thenikolyan/WildberriesParser/assets/48589418/29c34154-5830-4545-911f-bf61aa29febc)
 
 
+## Additional Information
+
+### Other sellers
+
+`Attention! This feature is very expensive, please be patient.`
+
+If you want to know the analogues sold by other sellers. You need to specify the mode of operation and pass the `DataFrame` with the `id` column, where the articles for which you are looking for analogues are registered.
+
+```python
+    other_products = products.multiprocess(df, mode='other_sellers')
+    other_products.to_excel('filename.xlsx', index=False)
+```
+
+As a result, you will have a file with columns `id` and `brother` article and analogue, respectively.
+
+
+### Purchased products
+
+If you want to know how many times a product has been bought, you need to use the `purchased_products` mode. You must submit a `DataFrame` as input, with the `id` column, where the articles for which you want to know information are indicated.
+
+```python
+    purchased_products = products.multiprocess(df, mode='purchased_products')
+    purchased_products.to_excel('filename.xlsx', index=False)
+```
+As a result, you will have a file with columns `nmId` and `qnt` article and number, respectively.
