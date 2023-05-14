@@ -25,8 +25,8 @@ Then you need to run the information collection function "", pass it as an argum
 ```
 
 As a result, you get excel file like this:
-(https://github.com/thenikolyan/WildberriesParser/assets/48589418/ffbb4d4d-835c-407d-9477-3e4736e687f0)
+![first](https://github.com/thenikolyan/WildberriesParser/assets/48589418/ffbb4d4d-835c-407d-9477-3e4736e687f0)
 
-(https://github.com/thenikolyan/WildberriesParser/assets/48589418/29c34154-5830-4545-911f-bf61aa29febc)
+![second](https://github.com/thenikolyan/WildberriesParser/assets/48589418/29c34154-5830-4545-911f-bf61aa29febc)
 
 
