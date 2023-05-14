@@ -69,3 +69,5 @@ If you need information about all catalogs. You have to create object of Catalog
 ```
 
 As a result, you get excel file like this:
+![third](https://github.com/thenikolyan/WildberriesParser/assets/48589418/b9df370f-ac54-4bef-94da-20d1e37b341d)
+
