@@ -10,5 +10,6 @@ if __name__ == '__main__':
 
     products = Product(url)
     product = products.multiprocess(5)
-    df = products.multiprocess(product, mode='other_sellers')
-    df.to_excel('test.xlsx', index=False)
+    product.to_excel('product.xlsx', index=False)
+    # df = products.multiprocess(product, mode='other_sellers')
+    # df.to_excel('test.xlsx', index=False)

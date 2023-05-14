@@ -47,7 +47,7 @@ class Product(Catalog):
             try:
                 data = json.loads(response.text)['data']['products']
                 for x in data:
-                    df = pd.concat([df, pd.DataFrame([x])[['id', 'name', 'brand', 'brandId', 'priceU', 'salePriceU', 'logisticsCost', 'rating', 'feedbacks']]])
+                    df = pd.concat([df, pd.DataFrame([x])])
                 
             except json.decoder.JSONDecodeError:
                 pass
@@ -68,7 +68,7 @@ class Product(Catalog):
             try:
                 data = json.loads(response.text)['data']['products']
                 for x in data:
-                    df = pd.concat([df, pd.DataFrame([x])[['id', 'name', 'brand', 'brandId', 'priceU', 'salePriceU', 'logisticsCost', 'rating', 'feedbacks']]])
+                    df = pd.concat([df, pd.DataFrame([x])])
                 
             except json.decoder.JSONDecodeError:
                 pass
