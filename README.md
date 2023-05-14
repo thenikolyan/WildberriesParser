@@ -19,7 +19,7 @@ if __name__ == '__main__':
     products = Product(url)
 ```
 
-Then you need to run the information collection function "", pass it as an argument the number of pages for parsing. (You can submit any amount, but remember that wildberries do not upload information after [page 100](https://www.wildberries.ru/catalog/igrushki/antistress&page=100))
+Then you need to run the information collection function `multiprocess`, pass it as an argument the number of pages for parsing. (You can submit any amount, but remember that wildberries do not upload information after [page 100](https://www.wildberries.ru/catalog/igrushki/antistress&page=100))
 
 ```python
     df = products.multiprocess(5)
