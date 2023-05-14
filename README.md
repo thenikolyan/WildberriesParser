@@ -27,8 +27,10 @@ Then you need to run the information collection function "", pass it as an argum
 As a result, you get excel file like this:
 ![Картинка][image1]
 ![Картинка][image2]
-![Картинка][image3]
 
-[image1]: C:/Users/nikol/Downloads/photo_2023-05-14_16-15-34.jpg
-[image2]: //placehold.it/200x100
-[image3]: //placehold.it/150x100
+
+[image1]: ![photo_2023-05-14_16-15-34](https://github.com/thenikolyan/WildberriesParser/assets/48589418/ffbb4d4d-835c-407d-9477-3e4736e687f0)
+
+[image2]: ![222222](https://github.com/thenikolyan/WildberriesParser/assets/48589418/29c34154-5830-4545-911f-bf61aa29febc)
+
+
