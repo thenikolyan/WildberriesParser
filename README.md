@@ -6,7 +6,7 @@ The parser was created to quickly obtain information using requests from the sit
 
 ## Products
 
-If uoy need common information from brand or catalog. You have to create object of Product class, so the class needs to provide a link as an argument.
+If you need common information from brand or catalog. You have to create object of Product class, so the class needs to provide a link as an argument.
 
 ```python
 import pandas as pd
@@ -31,6 +31,7 @@ As a result, you get excel file like this:
 
 ![second](https://github.com/thenikolyan/WildberriesParser/assets/48589418/29c34154-5830-4545-911f-bf61aa29febc)
 
+`Also now, there are names of sellers and their additional information  in file.`
 
 ## Additional Information
 

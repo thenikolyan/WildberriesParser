@@ -20,7 +20,7 @@ class Catalog:
         return (json.loads(response.text))
 
 
-    def ge_catalog(self, data: list=None, url: str=None, result: pd.DataFrame=pd.DataFrame([])) -> pd.DataFrame:
+    def get_catalog(self, data: list=None, url: str=None, result: pd.DataFrame=pd.DataFrame([])) -> pd.DataFrame:
         
         if url is None:
             url = self.url
@@ -30,7 +30,7 @@ class Catalog:
 
         for x in data:
             if x.get('childs') is not None:
-                result = self.ge_catalog(x.get('childs'), url, result)
+                result = self.get_catalog(x.get('childs'), url, result)
             else:
                 result = pd.concat([result, pd.DataFrame([x])])
         return result

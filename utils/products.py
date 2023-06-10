@@ -37,7 +37,7 @@ class Product(Catalog):
     def get_slice_of_brand_products(self, pages: list, send_end, url: str) -> None:
     
         brandsID = self.get_brand_id(self.url)
-        df = pd.DataFrame(columns = ['id', 'name', 'brand', 'brandId', 'priceU', 'salePriceU', 'logisticsCost', 'rating', 'feedbacks'])
+        df = pd.DataFrame(columns = ['id', 'name', 'brand', 'brandId', 'priceU', 'salePriceU', 'logisticsCost', 'rating', 'feedbacks', 'supplierId'])
 
         for x in pages:
             url = f'https://catalog.wb.ru/brands/{brandsID}/catalog?appType=1&brand={brandsID}&curr=rub&dest=31&regions=80,4,68,69,30,86,40,1,66,48,111&sort=popular&page={x}'
@@ -58,7 +58,7 @@ class Product(Catalog):
 
     def get_slice_of_catalog_products(self, pie: pd.DataFrame, pages: list, send_end, url: str) -> None:
 
-        df = pd.DataFrame(columns = ['id', 'name', 'brand', 'brandId', 'priceU', 'salePriceU', 'logisticsCost', 'rating', 'feedbacks'])
+        df = pd.DataFrame(columns = ['id', 'name', 'brand', 'brandId', 'priceU', 'salePriceU', 'logisticsCost', 'rating', 'feedbacks', 'supplierId'])
 
         for x in pages:
             url = f'''https://catalog.wb.ru/catalog/{pie.shard.values[0]}/catalog?appType=1&{pie['query'].values[0]}&curr=rub&dest=31&regions=80,4,68,69,30,86,40,1,66,48,111&sort=popular&page={x}'''
@@ -97,6 +97,18 @@ class Product(Catalog):
         send_end.send(df)
 
 
+    def get_sellers_name(self, sellersID: list, send_end, url: str=None) -> pd.DataFrame:
+        df = pd.DataFrame([])
+        for x in sellersID:
+            
+            url = f'https://www.wildberries.ru/webapi/seller/data/short/{str(x)}'
+            response = requests.get(url, headers={'User-Agent': f'{UserAgent().random}'})
+
+            res = json.loads(response.text)
+            df = pd.concat([df,  pd.DataFrame([res])])
+        send_end.send(df)
+
+
     def create_loop(self, target, limit: int, data: list, n_proc: int, added_data: pd.DataFrame=None) -> list:
         jobs, pipe_list = [], []
         if added_data is None:
@@ -126,7 +138,7 @@ class Product(Catalog):
 
             elif 'catalog' in self.url:
 
-                pie = self.get_table_catalog(url=self.__main_catalog)
+                pie = self.get_catalog(url=self.__main_catalog)
                 pie = pie.query(f'''url == "{self.url.split('www.wildberries.ru')[-1]}"''')
 
                 limit, pages = self.number_of_items(var, n_proc)
@@ -134,6 +146,17 @@ class Product(Catalog):
             else:
                 print('Mode is not mean')
                 return pd.DataFrame([])
+            
+            # add seller names
+            df = pd.concat([x.recv() for x in pipe_list])
+            sellers = list(set(list(df.supplierId)))
+            limit, pages = self.number_of_items(len(sellers), n_proc)
+            sellers_pipe_list = self.create_loop(self.get_sellers_name, limit, sellers, n_proc)
+            sellers = pd.concat([x.recv() for x in sellers_pipe_list])
+
+            df = df.merge(sellers.rename(columns={'id': 'supplierId', 'name': 'seller_name'}), on='supplierId', how='left')
+
+            return df
 
         elif isinstance(var, pd.DataFrame):
             limit, pages = self.number_of_items(var.shape[0], n_proc)
@@ -146,4 +169,4 @@ class Product(Catalog):
                 print('Mode is not mean')
                 return pd.DataFrame([])
 
-        return pd.concat([x.recv() for x in pipe_list])
+            return pd.concat([x.recv() for x in pipe_list])
