@@ -36,4 +36,5 @@ def test(articul: list) -> pd.DataFrame:
 
 test([28853096, 83379828, 26054112])
 
+
 #print( pd.DataFrame({'id': [28853096, 83379828]}).merge(pd.DataFrame({'brother': [28853096, 83379828]}), how='cross'))
