@@ -1,6 +1,10 @@
 import datetime as dt
 import copy
 
+from fake_useragent import UserAgent
+import requests
+import json
+
 from db.database import *
 
 create()
@@ -34,7 +38,26 @@ def test(articul: list) -> pd.DataFrame:
     return SQLarticul
 
 
-test([28853096, 83379828, 26054112])
+# test([28853096, 83379828, 26054112])
 
+print('a' in 'asd')
 
 #print( pd.DataFrame({'id': [28853096, 83379828]}).merge(pd.DataFrame({'brother': [28853096, 83379828]}), how='cross'))
+
+# df = pd.read_excel('SQLarticul.xlsx')
+# print(df.head())
+# print(df.dtypes)
+
+# print(df.shape)
+
+# df = df.astype('int64').drop_duplicates(subset=['id', 'brother'], keep=False)
+# print(df.shape)
+
+
+url = 'https://card.wb.ru/cards/detail?appType=1&curr=rub&dest=31&regions=80,4,83,68,69,30,86,40,1,66,31,48,111&spp=28&nm=' + '34560791'
+response = requests.get(url, headers={'User-Agent': f'{UserAgent().random}'})
+
+data = pd.DataFrame(json.loads(response.text)['data']['products'])
+
+print(data)
+

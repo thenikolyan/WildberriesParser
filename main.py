@@ -23,5 +23,5 @@ if __name__ == '__main__':
 
     df.to_excel('prosveshchenie.xlsx', index=False)
 
-    # catalog = Catalog()
+    # catalog = Catalog() 26191563
     # catalog.ge_catalog().to_excel('test.xlsx', index=False)

@@ -46,7 +46,7 @@ class Product(Catalog):
 
         data = pd.DataFrame(columns=['id', 'name', 'brand', 'brandId', 'priceU', 'salePriceU', 'logisticsCost', 'rating', 'feedbacks', 'supplierId'])
 
-        limit = 1 if len(articuls) < 100 else int(len(articuls)/100)
+        limit = 1 if len(articuls) < 100 else int(len(articuls)/100)+1
 
         for x in range(limit):
 
@@ -133,8 +133,8 @@ class Product(Catalog):
 
                 articuls = [x] + res
                 df = pd.concat([df,  pd.DataFrame({'id': articuls}).merge(pd.DataFrame({'brother': articuls}), how='cross')])
-            except json.decoder.JSONDecodeError:
-                 pass
+            except json.decoder.JSONDecodeError as e:
+                print(e)
 
         insert_articul(df)
 
@@ -145,11 +145,10 @@ class Product(Catalog):
         ids = self.get_data_by_articuls(list(set(list(SQLarticul.id.astype('int').astype('str')))))
         brothers = self.get_data_by_articuls(list(set(list(SQLarticul.brother.astype('int').astype('str')))))
 
-        SQLarticul = SQLarticul.merge(ids, on='id', how='left')
-        SQLarticul = SQLarticul.merge(brothers.rename(columns={'id': 'brother'}), on='brother', how='left', suffixes=('', '_brother'))
-
-
-        send_end.send(SQLarticul)
+        # SQLarticul = SQLarticul.merge(ids, on='id', how='left')
+        # SQLarticul = SQLarticul.merge(brothers.rename(columns={'id': 'brother'}), on='brother', how='left', suffixes=('', '_brother'))
+        tmp = [SQLarticul, ids, brothers]
+        send_end.send(tmp)
 
 
     def get_sellers_name(self, sellersID: list, send_end, url: str=None) -> pd.DataFrame:
@@ -230,6 +229,18 @@ class Product(Catalog):
 
             if mode == 'other_sellers':
                 pipe_list = self.create_loop(self.get_slice_of_other_sellers, limit, list(var.id), n_proc)
+                listdf = [x.recv() for x in pipe_list]
+                SQLarticul = pd.concat([x[0] for x in listdf]).drop_duplicates(keep='first').query('id != brother')
+                ids = pd.concat([x[1] for x in listdf]).drop_duplicates(keep='first')
+                brothers = pd.concat([x[2] for x in listdf]).drop_duplicates(keep='first')
+
+                SQLarticul = SQLarticul.merge(ids, on='id', how='left')
+                SQLarticul = SQLarticul.merge(brothers.rename(columns={'id': 'brother'}), on='brother', how='left', suffixes=('', '_brother'))
+
+                SQLarticul = SQLarticul.dropna()
+
+                return SQLarticul
+
             elif mode == 'purchased_products':
                 pipe_list = self.create_loop(self.get_slice_of_purchased_products, limit, list(var.id), n_proc)
             else:
