@@ -175,6 +175,16 @@ class Product(Catalog):
         send_end.send(sellers)
 
 
+    def add_seller_names(self, df: pd.DataFrame, n_proc: int=4) -> pd.DataFrame:
+
+        sellers = list(set(list(df.supplierId)))
+        limit, pages = self.number_of_items(len(sellers), n_proc)
+        sellers_pipe_list = self.create_loop(self.get_sellers_name, limit, sellers, n_proc)
+        sellers = pd.concat([x.recv() for x in sellers_pipe_list])
+
+        return df.merge(sellers.drop_duplicates(keep='first').rename(columns={'id': 'supplierId', 'name': 'seller_name'}), on='supplierId', how='left')
+
+
     def create_loop(self, target, limit: int, data: list, n_proc: int, added_data: pd.DataFrame=None) -> list:
         jobs, pipe_list = [], []
         if added_data is None:
@@ -234,8 +244,8 @@ class Product(Catalog):
                 ids = pd.concat([x[1] for x in listdf]).drop_duplicates(keep='first')
                 brothers = pd.concat([x[2] for x in listdf]).drop_duplicates(keep='first')
 
-                SQLarticul = SQLarticul.merge(ids, on='id', how='left')
-                SQLarticul = SQLarticul.merge(brothers.rename(columns={'id': 'brother'}), on='brother', how='left', suffixes=('', '_brother'))
+                SQLarticul = SQLarticul.merge(self.add_seller_names(ids, n_proc).drop(columns=['fineName', 'ogrn', 'trademark', 'legalAddress', 'isUnknown']), on='id', how='left')
+                SQLarticul = SQLarticul.merge(self.add_seller_names(brothers, n_proc).drop(columns=['fineName', 'ogrn', 'trademark', 'legalAddress', 'isUnknown']).rename(columns={'id': 'brother'}), on='brother', how='left', suffixes=('', '_brother'))
 
                 SQLarticul = SQLarticul.dropna()
 

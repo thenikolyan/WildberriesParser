@@ -12,14 +12,14 @@ if __name__ == '__main__':
 
     products = Product(url)
 
-    product = products.multiprocess(100)
+    product = products.multiprocess(20)
 
     product.to_excel('product.xlsx', index=False)
 
     s = time.time()
     df = products.multiprocess(product, mode='other_sellers')
     e = time.time()
-    print(e-s)
+    print(e-s, df.shape)
 
     df.to_excel('prosveshchenie.xlsx', index=False)
 
