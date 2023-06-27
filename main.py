@@ -4,20 +4,24 @@ import time
 
 from utils.products import Product
 from utils.catalog import Catalog
+from db.database import create
 
 
 if __name__ == '__main__':
+
+    create()
+
     #url = 'https://www.wildberries.ru/catalog/igrushki/antistress'
     url = 'https://www.wildberries.ru/brands/prosveshchenie'
 
     products = Product(url)
 
-    product = products.multiprocess(20)
+    # product = products.multiprocess(20)
 
-    product.to_excel('product.xlsx', index=False)
+    # product.to_excel('product.xlsx', index=False)
 
     s = time.time()
-    df = products.multiprocess(product, mode='other_sellers')
+    df = products.multiprocess(pd.DataFrame([{'id': 158112592}]), mode='other_sellers', recollection_=True)
     e = time.time()
     print(e-s, df.shape)
 

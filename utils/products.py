@@ -142,7 +142,7 @@ class Product(Catalog):
             except json.decoder.JSONDecodeError as e:
                 print(e)
 
-        insert_articul(df)
+        insert_articul(df.query('id != brother'))
 
         SQLarticul = pd.concat([SQLarticul, df])
         SQLarticul = SQLarticul[SQLarticul.id.isin(list(unchangable_articul))].reset_index(drop=True)
