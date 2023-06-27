@@ -54,7 +54,7 @@ class Product(Catalog):
 
             tmp_articuls = ';'.join(articuls[x*100:(x+1)*100])
 
-            url = 'https://card.wb.ru/cards/detail?appType=1&curr=rub&dest=-1257786&regions=80,38,4,64,83,33,68,70,69,30,86,75,40,1,66,110,22,31,48,71,114&spp=28&nm=' + tmp_articuls
+            url = 'https://card.wb.ru/cards/detail?appType=1&curr=rub&dest=-1257786&regions=80,38,4,64,83,33,68,70,69,30,86,75,40,1,66,110,22,31,48,71,114&nm=' + tmp_articuls
             response = requests.get(url, headers={'User-Agent': f'{UserAgent().random}'})
 
             data = pd.concat([data, pd.DataFrame(json.loads(response.text)['data']['products'])])
