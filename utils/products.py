@@ -54,7 +54,7 @@ class Product(Catalog):
 
             tmp_articuls = ';'.join(articuls[x*100:(x+1)*100])
 
-            url = 'https://card.wb.ru/cards/detail?appType=1&curr=rub&dest=123585542&regions=80,38,4,64,83,33,68,70,69,30,86,75,40,1,66,110,22,31,48,71,114&spp=28&nm=' + tmp_articuls
+            url = 'https://card.wb.ru/cards/detail?appType=1&curr=rub&dest=-1257786&regions=80,38,4,64,83,33,68,70,69,30,86,75,40,1,66,110,22,31,48,71,114&spp=28&nm=' + tmp_articuls
             response = requests.get(url, headers={'User-Agent': f'{UserAgent().random}'})
 
             data = pd.concat([data, pd.DataFrame(json.loads(response.text)['data']['products'])])
@@ -71,7 +71,7 @@ class Product(Catalog):
 
         for x in pages:
 
-            url = f'https://catalog.wb.ru/brands/{brandsID}/catalog?appType=1&brand={brandsID}&curr=rub&dest=123585542&regions=80,38,4,64,83,33,68,70,69,30,86,75,40,1,66,110,22,31,48,71,114&sort=popular&page={x}'
+            url = f'https://catalog.wb.ru/brands/{brandsID}/catalog?appType=1&brand={brandsID}&curr=rub&dest=-1257786&regions=80,38,4,64,83,33,68,70,69,30,86,75,40,1,66,110,22,31,48,71,114&sort=popular&page={x}'
 
             response = requests.get(url, headers={'User-Agent': f'{UserAgent().random}'})
 
@@ -93,7 +93,7 @@ class Product(Catalog):
 
         for x in pages:
             
-            url = f'''https://catalog.wb.ru/catalog/{pie.shard.values[0]}/catalog?appType=1&{pie['query'].values[0]}&curr=rub&dest=123585542&regions=80,38,4,64,83,33,68,70,69,30,86,75,40,1,66,110,22,31,48,71,114&sort=popular&page={x}'''
+            url = f'''https://catalog.wb.ru/catalog/{pie.shard.values[0]}/catalog?appType=1&{pie['query'].values[0]}&curr=rub&dest=-1257786&regions=80,38,4,64,83,33,68,70,69,30,86,75,40,1,66,110,22,31,48,71,114&sort=popular&page={x}'''
 
             response = requests.get(url, headers={'User-Agent': f'{UserAgent().random}'})
 
