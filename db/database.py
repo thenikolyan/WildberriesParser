@@ -58,3 +58,23 @@ def insert_articul(df: pd.DataFrame) -> None:
     df.to_sql(name='articuls', con=conn, if_exists='append', index=False)
 
     return None
+
+
+def recollection(flag: bool=False, table: str='articuls') -> None:
+    if flag:
+        conn.execute(f'''
+                     CREATE TABLE temp_table as SELECT DISTINCT * FROM {table}
+                     ''')
+        
+        conn.execute(f'''
+                     DROP TABLE {table}
+                     ''')
+        
+        conn.execute(f'''
+                     ALTER TABLE temp_table RENAME TO {table}
+                     ''')
+        
+        conn.commit()
+    return None
+
+

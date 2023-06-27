@@ -21,7 +21,8 @@ if __name__ == '__main__':
     e = time.time()
     print(e-s, df.shape)
 
-    df.to_excel('prosveshchenie.xlsx', index=False)
+    df.to_excel('test.xlsx', index=False)
 
     # catalog = Catalog() 26191563
     # catalog.ge_catalog().to_excel('test.xlsx', index=False)
+

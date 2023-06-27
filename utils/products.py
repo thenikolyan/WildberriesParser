@@ -7,7 +7,7 @@ import json
 import copy
 
 from utils.catalog import Catalog
-from db.database import get_sellers, get_articuls, insert_seller, insert_articul
+from db.database import get_sellers, get_articuls, insert_seller, insert_articul, recollection
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -18,9 +18,11 @@ class Product(Catalog):
     __main_catalog = 'https://static-basket-01.wb.ru/vol0/data/main-menu-ru-ru-v2.json'
 
 
-
     def __init__(self, url: str) -> None:
-        self.url = url
+        if url is None:
+            self.url = ''
+        else:
+            self.url = url
 
 
     @staticmethod
@@ -52,7 +54,7 @@ class Product(Catalog):
 
             tmp_articuls = ';'.join(articuls[x*100:(x+1)*100])
 
-            url = 'https://card.wb.ru/cards/detail?appType=1&curr=rub&dest=31&regions=80,4,83,68,69,30,86,40,1,66,31,48,111&spp=28&nm=' + tmp_articuls
+            url = 'https://card.wb.ru/cards/detail?appType=1&curr=rub&dest=123585542&regions=80,38,4,64,83,33,68,70,69,30,86,75,40,1,66,110,22,31,48,71,114&spp=28&nm=' + tmp_articuls
             response = requests.get(url, headers={'User-Agent': f'{UserAgent().random}'})
 
             data = pd.concat([data, pd.DataFrame(json.loads(response.text)['data']['products'])])
@@ -68,7 +70,8 @@ class Product(Catalog):
         df = pd.DataFrame(columns = ['id', 'name', 'brand', 'brandId', 'priceU', 'salePriceU', 'logisticsCost', 'rating', 'feedbacks', 'supplierId'])
 
         for x in pages:
-            url = f'https://catalog.wb.ru/brands/{brandsID}/catalog?appType=1&brand={brandsID}&curr=rub&dest=31&regions=80,4,68,69,30,86,40,1,66,48,111&sort=popular&page={x}'
+
+            url = f'https://catalog.wb.ru/brands/{brandsID}/catalog?appType=1&brand={brandsID}&curr=rub&dest=123585542&regions=80,38,4,64,83,33,68,70,69,30,86,75,40,1,66,110,22,31,48,71,114&sort=popular&page={x}'
 
             response = requests.get(url, headers={'User-Agent': f'{UserAgent().random}'})
 
@@ -89,7 +92,8 @@ class Product(Catalog):
         df = pd.DataFrame(columns = ['id', 'name', 'brand', 'brandId', 'priceU', 'salePriceU', 'logisticsCost', 'rating', 'feedbacks', 'supplierId'])
 
         for x in pages:
-            url = f'''https://catalog.wb.ru/catalog/{pie.shard.values[0]}/catalog?appType=1&{pie['query'].values[0]}&curr=rub&dest=31&regions=80,4,68,69,30,86,40,1,66,48,111&sort=popular&page={x}'''
+            
+            url = f'''https://catalog.wb.ru/catalog/{pie.shard.values[0]}/catalog?appType=1&{pie['query'].values[0]}&curr=rub&dest=123585542&regions=80,38,4,64,83,33,68,70,69,30,86,75,40,1,66,110,22,31,48,71,114&sort=popular&page={x}'''
 
             response = requests.get(url, headers={'User-Agent': f'{UserAgent().random}'})
 
@@ -113,13 +117,15 @@ class Product(Catalog):
         send_end.send(pd.DataFrame(json.loads(response.text)))
 
 
-    def get_slice_of_other_sellers(self, articul: list, send_end, url: str=None) -> pd.DataFrame:
+    def get_slice_of_other_sellers(self,  recollection: bool, articul: list, send_end, url: str=None) -> pd.DataFrame:
 
         df = pd.DataFrame(columns=['id', 'brother'])
         SQLarticul = get_articuls(articul)
         unchangable_articul = copy.deepcopy(articul)
         articul = set(articul)
-        articul.difference_update(set(SQLarticul.id))
+
+        if not recollection:
+            articul.difference_update(set(SQLarticul.id))
 
         for x in list(articul):
 
@@ -145,8 +151,6 @@ class Product(Catalog):
         ids = self.get_data_by_articuls(list(set(list(SQLarticul.id.astype('int').astype('str')))))
         brothers = self.get_data_by_articuls(list(set(list(SQLarticul.brother.astype('int').astype('str')))))
 
-        # SQLarticul = SQLarticul.merge(ids, on='id', how='left')
-        # SQLarticul = SQLarticul.merge(brothers.rename(columns={'id': 'brother'}), on='brother', how='left', suffixes=('', '_brother'))
         tmp = [SQLarticul, ids, brothers]
         send_end.send(tmp)
 
@@ -185,7 +189,7 @@ class Product(Catalog):
         return df.merge(sellers.drop_duplicates(keep='first').rename(columns={'id': 'supplierId', 'name': 'seller_name'}), on='supplierId', how='left')
 
 
-    def create_loop(self, target, limit: int, data: list, n_proc: int, added_data: pd.DataFrame=None) -> list:
+    def create_loop(self, target, limit: int, data: list, n_proc: int, added_data: any=None) -> list:
         jobs, pipe_list = [], []
         if added_data is None:
             for i in range(n_proc):
@@ -204,7 +208,7 @@ class Product(Catalog):
         return pipe_list
 
 
-    def multiprocess(self, var, mode: str=None) -> pd.DataFrame:
+    def multiprocess(self, var, mode: str=None, recollection_: bool=False) -> pd.DataFrame:
         n_proc = multiprocessing.cpu_count()
 
         if isinstance(var, int):
@@ -238,7 +242,12 @@ class Product(Catalog):
             limit, pages = self.number_of_items(var.shape[0], n_proc)
 
             if mode == 'other_sellers':
-                pipe_list = self.create_loop(self.get_slice_of_other_sellers, limit, list(var.id), n_proc)
+
+                pipe_list = self.create_loop(target=self.get_slice_of_other_sellers, limit=limit, data=list(var.id), n_proc=n_proc, added_data=recollection)
+
+                if recollection_:
+                    recollection(flag=recollection_, table='articuls')
+
                 listdf = [x.recv() for x in pipe_list]
                 SQLarticul = pd.concat([x[0] for x in listdf]).drop_duplicates(keep='first').query('id != brother')
                 ids = pd.concat([x[1] for x in listdf]).drop_duplicates(keep='first')
