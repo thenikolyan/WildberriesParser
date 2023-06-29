@@ -21,7 +21,7 @@ if __name__ == '__main__':
     # product.to_excel('product.xlsx', index=False)
 
     s = time.time()
-    df = products.multiprocess(pd.DataFrame([{'id': 67824893}, {'id': 163990051}, {'id':  28918982}]), mode='other_sellers', recollection_=True, avaliable=False)
+    df = products.multiprocess(pd.DataFrame([{'id': 67824893}, {'id': 30394653}]), mode='other_sellers', recollection_=True, avaliable=False)
     e = time.time()
     print(e-s, df.shape)
 

@@ -32,6 +32,23 @@ class Product(Catalog):
         return int(json.loads(response.text)['id'])
     
 
+    def check_avaliable(self, df: pd.DataFrame, articuls: list=[], avaliable: bool=True) -> pd.DataFrame:
+
+        if not df.empty:
+            df[['priceU', 'salePriceU', 'logisticsCost']] = df[['priceU', 'salePriceU', 'logisticsCost']] / 100
+        else:
+            return pd.DataFrame(columns=['id', 'name', 'brand', 'brandId', 'priceU', 'salePriceU', 'logisticsCost', 'rating', 'feedbacks', 'supplierId'])
+
+        # if card exsists, but nol avaliable
+        if not avaliable:
+            try:
+                df = df.dropna(subset='wh')
+            except KeyError:
+                return pd.DataFrame(columns=['id', 'name', 'brand', 'brandId', 'priceU', 'salePriceU', 'logisticsCost', 'rating', 'feedbacks', 'supplierId'])
+        
+        return df[['id', 'name', 'brand', 'brandId', 'priceU', 'salePriceU', 'logisticsCost', 'rating', 'feedbacks', 'supplierId']]
+
+
     def number_of_items(self, page: int, n_proc: int):
         if page % n_proc != 0:
             limit = page//n_proc + 1
@@ -59,19 +76,7 @@ class Product(Catalog):
 
             df = pd.concat([df, pd.DataFrame(json.loads(response.text)['data']['products'])])
 
-        if not df.empty:
-            df[['priceU', 'salePriceU', 'logisticsCost']] = df[['priceU', 'salePriceU', 'logisticsCost']] / 100
-        else:
-            return pd.DataFrame(columns=['id', 'name', 'brand', 'brandId', 'priceU', 'salePriceU', 'logisticsCost', 'rating', 'feedbacks', 'supplierId'])
-
-        # if card exsists,  but nol avaliable
-        if not avaliable:
-            try:
-                df = df.dropna(subset='wh')
-            except KeyError:
-                return pd.DataFrame(columns=['id', 'name', 'brand', 'brandId', 'priceU', 'salePriceU', 'logisticsCost', 'rating', 'feedbacks', 'supplierId'])
-
-        return df[['id', 'name', 'brand', 'brandId', 'priceU', 'salePriceU', 'logisticsCost', 'rating', 'feedbacks', 'supplierId']]
+        return self.check_avaliable(df, articuls, avaliable)
 
 
     def get_slice_of_brand_products(self, pages: list, send_end, url: str, avaliable: bool=True) -> None:
@@ -93,19 +98,7 @@ class Product(Catalog):
             except json.decoder.JSONDecodeError:
                 pass
 
-        if not df.empty:
-            df[['priceU', 'salePriceU', 'logisticsCost']] = df[['priceU', 'salePriceU', 'logisticsCost']] / 100
-        else:
-            return pd.DataFrame(columns=['id', 'name', 'brand', 'brandId', 'priceU', 'salePriceU', 'logisticsCost', 'rating', 'feedbacks', 'supplierId'])
-
-        # if card exsists,  but nol avaliable
-        if not avaliable:
-            try:
-                df = df.dropna(subset='wh')
-            except KeyError:
-                return pd.DataFrame(columns=['id', 'name', 'brand', 'brandId', 'priceU', 'salePriceU', 'logisticsCost', 'rating', 'feedbacks', 'supplierId'])
-
-        send_end.send(df[['id', 'name', 'brand', 'brandId', 'priceU', 'salePriceU', 'logisticsCost', 'rating', 'feedbacks', 'supplierId']])
+        return self.check_avaliable(df, [], avaliable)
 
 
     def get_slice_of_catalog_products(self, pie: pd.DataFrame, pages: list, send_end, url: str, avaliable: bool=True) -> None:
@@ -126,19 +119,7 @@ class Product(Catalog):
             except json.decoder.JSONDecodeError:
                 pass
 
-        if not df.empty:
-            df[['priceU', 'salePriceU', 'logisticsCost']] = df[['priceU', 'salePriceU', 'logisticsCost']] / 100
-        else:
-            return pd.DataFrame(columns=['id', 'name', 'brand', 'brandId', 'priceU', 'salePriceU', 'logisticsCost', 'rating', 'feedbacks', 'supplierId'])
-
-        # if card exsists,  but nol avaliable
-        if not avaliable:
-            try:
-                df = df.dropna(subset='wh')
-            except KeyError:
-                return pd.DataFrame(columns=['id', 'name', 'brand', 'brandId', 'priceU', 'salePriceU', 'logisticsCost', 'rating', 'feedbacks', 'supplierId'])
-
-        send_end.send(df[['id', 'name', 'brand', 'brandId', 'priceU', 'salePriceU', 'logisticsCost', 'rating', 'feedbacks', 'supplierId']])
+        return self.check_avaliable(df, [], avaliable)
 
 
     def get_slice_of_purchased_products(self, products: list, send_end, url: str=None) -> None:
@@ -180,7 +161,7 @@ class Product(Catalog):
         SQLarticul = SQLarticul[SQLarticul.id.isin(list(unchangable_articul))].reset_index(drop=True)
 
 
-        ids = self.get_data_by_articuls(list(set(list(SQLarticul.id.astype('int').astype('str')))), avaliable)
+        ids = self.get_data_by_articuls(list(set(list(SQLarticul.id.astype('int').astype('str')))), not avaliable)
         brothers = self.get_data_by_articuls(list(set(list(SQLarticul.brother.astype('int').astype('str')))), avaliable)
 
         tmp = [SQLarticul, ids, brothers]
