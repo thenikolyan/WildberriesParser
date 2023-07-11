@@ -14,7 +14,7 @@ if __name__ == '__main__':
 
     create()
 
-    pages = 10
+    pages = 100
     #url = 'https://www.wildberries.ru/catalog/igrushki/antistress'
     url = 'https://www.wildberries.ru/catalog/dlya-doma/hozyaystvennye-tovary/stirka?sort=popular&xsubject=1080'
 
@@ -29,18 +29,18 @@ if __name__ == '__main__':
     
     product.to_excel('products.xlsx', index=False)
     
-    print()
-    print()
+    # print()
+    # print()
 
-    s = time.time()
-    df = products.multiprocess(product, mode='purchased_products', recollection_= False, avaliable=False)
-    e = time.time()
+    # s = time.time()
+    # df = products.multiprocess(product, mode='purchased_products', recollection_= False, avaliable=False)
+    # e = time.time()
 
-    print('Количество контрагентов: ', df.shape[0])
-    print(f'Время сбора всех контрагентов к количеству карточек равному {product.shape[0]}: ', e-s) 
+    # print('Количество контрагентов: ', df.shape[0])
+    # print(f'Время сбора всех контрагентов к количеству карточек равному {product.shape[0]}: ', e-s) 
 
-    df.to_excel('counterparty.xlsx', index=False)
+    # df.to_excel('counterparty.xlsx', index=False)
 
     
-    print()
-    print()
+    # print()
+    # print()

@@ -107,15 +107,15 @@ class Product(Catalog):
 
         if isinstance(added_data, list):
             pie, subcategory = added_data[0], added_data[1]
-            url = f'''https://catalog.wb.ru/catalog/{pie.shard.values[0]}/catalog?appType=1&{pie['query'].values[0]}&curr=rub&dest=-1257786&regions=80,38,4,64,83,33,68,70,69,30,86,75,40,1,66,110,22,31,48,71,114&{subcategory}&'''
+            tmp_url = f'''https://catalog.wb.ru/catalog/{pie.shard.values[0]}/catalog?appType=1&{pie['query'].values[0]}&curr=rub&dest=-1257786&regions=80,38,4,64,83,33,68,70,69,30,86,75,40,1,66,110,22,31,48,71,114&{subcategory}&'''
         else:
-            url = f'''https://catalog.wb.ru/catalog/{added_data.shard.values[0]}/catalog?appType=1&{added_data['query'].values[0]}&curr=rub&dest=-1257786&regions=80,38,4,64,83,33,68,70,69,30,86,75,40,1,66,110,22,31,48,71,114&sort=popular&'''
+            tmp_url = f'''https://catalog.wb.ru/catalog/{added_data.shard.values[0]}/catalog?appType=1&{added_data['query'].values[0]}&curr=rub&dest=-1257786&regions=80,38,4,64,83,33,68,70,69,30,86,75,40,1,66,110,22,31,48,71,114&sort=popular&'''
 
         df = pd.DataFrame([])
 
         for x in pages:
             
-            url += rf'''page={x}'''
+            url = tmp_url + rf'''page={x}'''
 
             response = requests.get(url, headers={'User-Agent': f'{UserAgent().random}'})
 
@@ -124,7 +124,8 @@ class Product(Catalog):
                 for x in data:
                     df = pd.concat([df, pd.DataFrame([x])])
                 
-            except json.decoder.JSONDecodeError:
+            except json.decoder.JSONDecodeError as e:
+
                 pass
 
         send_end.send(self.check_avaliable(df, [], avaliable))
