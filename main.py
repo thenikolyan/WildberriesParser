@@ -9,23 +9,38 @@ from db.database import create
 
 if __name__ == '__main__':
 
+    print()
+    print()
+
     create()
 
+    pages = 10
     #url = 'https://www.wildberries.ru/catalog/igrushki/antistress'
-    url = 'https://www.wildberries.ru/brands/prosveshchenie'
+    url = 'https://www.wildberries.ru/catalog/dlya-doma/hozyaystvennye-tovary/stirka?sort=popular&xsubject=1080'
 
     products = Product(url)
 
-    # product = products.multiprocess(20)
-
-    # product.to_excel('product.xlsx', index=False)
-
     s = time.time()
-    df = products.multiprocess(pd.DataFrame([{'id': 67824893}, {'id': 30394653}]), mode='other_sellers', recollection_=True, avaliable=False)
+    product = products.multiprocess(pages)
     e = time.time()
-    print(e-s, df.shape)
+    print('Количество просматриваемых страниц: ', pages)
+    print('Количество карточек: ', product.shape[0])
+    print('Время сбора всех карточек: ', e-s) 
+    
+    product.to_excel('products.xlsx', index=False)
+    
+    # print()
+    # print()
 
-    df.to_excel('test.xlsx', index=False)
+    # s = time.time()
+    # df = products.multiprocess(product, mode='other_sellers', recollection_= False, avaliable=True)
+    # e = time.time()
 
-    # catalog = Catalog() 26191563
-    # catalog.ge_catalog().to_excel('test.xlsx', index=False)
+    # print('Количество контрагентов: ', df.shape[0])
+    # print(f'Время сбора всех контрагентов к количеству карточек равному {product.shape[0]}: ', e-s) 
+
+    # df.to_excel('counterparty.xlsx', index=False)
+
+    
+    # print()
+    # print()

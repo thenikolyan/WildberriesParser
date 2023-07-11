@@ -5,6 +5,7 @@ import numpy as np
 import requests
 import json
 import copy
+import time
 
 from utils.catalog import Catalog
 from db.database import get_sellers, get_articuls, insert_seller, insert_articul, recollection
@@ -98,16 +99,23 @@ class Product(Catalog):
             except json.decoder.JSONDecodeError:
                 pass
 
-        return self.check_avaliable(df, [], avaliable)
+        send_end.send(self.check_avaliable(df, [], avaliable))
 
 
-    def get_slice_of_catalog_products(self, pie: pd.DataFrame, pages: list, send_end, url: str, avaliable: bool=True) -> None:
+    def get_slice_of_catalog_products(self, added_data: pd.DataFrame, pages: list, send_end, url: str, avaliable: bool=True) -> None:
+        
+
+        if isinstance(added_data, list):
+            pie, subcategory = added_data[0], added_data[1]
+            url = f'''https://catalog.wb.ru/catalog/{pie.shard.values[0]}/catalog?appType=1&{pie['query'].values[0]}&curr=rub&dest=-1257786&regions=80,38,4,64,83,33,68,70,69,30,86,75,40,1,66,110,22,31,48,71,114&{subcategory}&'''
+        else:
+            url = f'''https://catalog.wb.ru/catalog/{added_data.shard.values[0]}/catalog?appType=1&{added_data['query'].values[0]}&curr=rub&dest=-1257786&regions=80,38,4,64,83,33,68,70,69,30,86,75,40,1,66,110,22,31,48,71,114&sort=popular&'''
 
         df = pd.DataFrame([])
 
         for x in pages:
             
-            url = f'''https://catalog.wb.ru/catalog/{pie.shard.values[0]}/catalog?appType=1&{pie['query'].values[0]}&curr=rub&dest=-1257786&regions=80,38,4,64,83,33,68,70,69,30,86,75,40,1,66,110,22,31,48,71,114&sort=popular&page={x}'''
+            url += rf'''page={x}'''
 
             response = requests.get(url, headers={'User-Agent': f'{UserAgent().random}'})
 
@@ -119,7 +127,7 @@ class Product(Catalog):
             except json.decoder.JSONDecodeError:
                 pass
 
-        return self.check_avaliable(df, [], avaliable)
+        send_end.send(self.check_avaliable(df, [], avaliable))
 
 
     def get_slice_of_purchased_products(self, products: list, send_end, url: str=None) -> None:
@@ -130,15 +138,16 @@ class Product(Catalog):
         send_end.send(pd.DataFrame(json.loads(response.text)))
 
 
-    def get_slice_of_other_sellers(self,  recollection: bool, articul: list, send_end, url: str=None, avaliable: bool=True) -> pd.DataFrame:
+    def get_slice_of_other_sellers(self,  recollection_: bool, articul: list, send_end, url: str=None, avaliable: bool=True) -> pd.DataFrame:
 
         df = pd.DataFrame(columns=['id', 'brother'])
         SQLarticul = get_articuls(articul)
         unchangable_articul = copy.deepcopy(articul)
         articul = set(articul)
 
-        if not recollection:
+        if not recollection_:
             articul.difference_update(set(SQLarticul.id))
+
 
         for x in list(articul):
 
@@ -153,9 +162,12 @@ class Product(Catalog):
                 articuls = [x] + res
                 df = pd.concat([df,  pd.DataFrame({'id': articuls}).merge(pd.DataFrame({'brother': articuls}), how='cross')])
             except json.decoder.JSONDecodeError as e:
-                print(e)
+                pass
+                # print(4)
+                # print(e)
 
-        insert_articul(df.query('id != brother'))
+        insert_articul(df)
+        df = df.query('id != brother')
 
         SQLarticul = pd.concat([SQLarticul, df])
         SQLarticul = SQLarticul[SQLarticul.id.isin(list(unchangable_articul))].reset_index(drop=True)
@@ -230,12 +242,21 @@ class Product(Catalog):
                 pipe_list = self.create_loop(target=self.get_slice_of_brand_products, limit=limit, data=pages, n_proc=n_proc, avaliable=avaliable)
 
             elif 'catalog' in self.url:
-
-                pie = self.get_catalog(url=self.__main_catalog)
-                pie = pie.query(f'''url == "{self.url.split('www.wildberries.ru')[-1]}"''')
-
                 limit, pages = self.number_of_items(var, n_proc)
-                pipe_list = self.create_loop(target=self.get_slice_of_catalog_products, limit=limit, data=pages, n_proc=n_proc, avaliable=avaliable, added_data=pie)
+
+                if '?' in self.url:
+                    url_query, url_added = (self.url.split('www.wildberries.ru')[-1]).split('?')
+
+                    pie = self.get_catalog(url=self.__main_catalog)
+                    pie = pie.query(f'''url == "{url_query}"''')
+
+                    pipe_list = self.create_loop(target=self.get_slice_of_catalog_products, limit=limit, data=pages, n_proc=n_proc, avaliable=avaliable, added_data=[pie, url_added])
+                else:
+                    pie = self.get_catalog(url=self.__main_catalog)
+                    pie = pie.query(f'''url == "{self.url.split('www.wildberries.ru')[-1]}"''')
+
+                    pipe_list = self.create_loop(target=self.get_slice_of_catalog_products, limit=limit, data=pages, n_proc=n_proc, avaliable=avaliable, added_data=pie)
+                
             else:
                 print('Mode is not mean')
                 return pd.DataFrame([])
@@ -249,14 +270,14 @@ class Product(Catalog):
 
             df = df.merge(sellers.rename(columns={'id': 'supplierId', 'name': 'seller_name'}), on='supplierId', how='left')
 
-            return df
+            return df.drop_duplicates(keep='first')
 
         elif isinstance(var, pd.DataFrame):
             limit, pages = self.number_of_items(var.shape[0], n_proc)
 
             if mode == 'other_sellers':
 
-                pipe_list = self.create_loop(target=self.get_slice_of_other_sellers, limit=limit, data=list(var.id), n_proc=n_proc, avaliable=avaliable, added_data=recollection)
+                pipe_list = self.create_loop(target=self.get_slice_of_other_sellers, limit=limit, data=list(var.id), n_proc=n_proc, avaliable=avaliable, added_data=recollection_)
 
                 if recollection_:
                     recollection(flag=recollection_, table='articuls')

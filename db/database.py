@@ -43,11 +43,18 @@ def get_articuls(articul: list) -> pd.DataFrame:
 
 
 def insert_seller(df: pd.DataFrame) -> None:
+
+
+    df['name'] = df['name'].apply(lambda x: x.replace('"', ''))
+    df['fineName'] = df['fineName'].apply(lambda x: x.replace('"', ''))
+    df['trademark'] = df['trademark'].apply(lambda x: x.replace('"', ''))
+    df['legalAddress'] = df['legalAddress'].apply(lambda x: x.replace('"', ''))
+
     df = df.to_dict('records')
-    for x in df:
+    for x in df: 
         conn.execute(
             f'''insert or ignore into sellers (id, name, fineName, ogrn, trademark, legalAddress, isUnknown) 
-            values ({x['id']}, '{x['name']}', '{x['fineName']}', {x['ogrn']}, '{x['trademark']}', '{x['legalAddress']}', {x['isUnknown']})''')
+            values ({x['id']}, "{x['name']}", "{x['fineName']}", {x['ogrn']}, "{x['trademark']}", "{x['legalAddress']}", {x['isUnknown']})''')
         conn.commit()
 
     return None
