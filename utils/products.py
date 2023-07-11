@@ -130,7 +130,7 @@ class Product(Catalog):
         send_end.send(self.check_avaliable(df, [], avaliable))
 
 
-    def get_slice_of_purchased_products(self, products: list, send_end, url: str=None) -> None:
+    def get_slice_of_purchased_products(self, products: list, send_end, url: str=None, avaliable: bool=None) -> None:
         x = ','.join(list(map(str, products)))
         url = f'https://product-order-qnt.wildberries.ru/by-nm/?nm={x}'
         response = requests.get(url, headers={'User-Agent': f'{UserAgent().random}'})
@@ -296,11 +296,13 @@ class Product(Catalog):
 
             elif mode == 'purchased_products':
                 pipe_list = self.create_loop(target=self.get_slice_of_purchased_products, limit=limit, data=list(var.id), n_proc=n_proc, avaliable=avaliable)
+                purchased_products = pd.concat([x.recv() for x in pipe_list]).rename(columns={'nmId': 'id'})
+
+                return var.merge(purchased_products, on='id', how='left')
+            
             else:
                 print('Mode is not mean')
                 return pd.DataFrame([])
-
-            return pd.concat([x.recv() for x in pipe_list])
         
         else:
             print('Mode is not mean')
